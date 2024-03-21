@@ -22,21 +22,19 @@ body {
 
 .container-w50 {
     width: 50%;
-    height: 200px;
+    height: 220px;
     background-color: white;
     border: 1px solid black;
 }
 
 .container-w100 {
     width: 100%;
-    height: 200px;
+    height: 220px;
     background-color: white;
 }
 
 #portfolio-container, #exchanges-container {
     background-color: white;
-
-
 }
 
 .d-flex-between {
@@ -53,3 +51,40 @@ h2 {
 .pad-xy-8 {
     padding: 8px;
 }
+
+.topic {
+
+    display: block;
+    font-size: 20px;
+}
+
+#exchanges-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.exchange-buttons {
+    width: 47%;
+    border: none;
+    padding: 16px 0;
+    border-radius: 12px;
+    background-color: lightblue;
+    cursor: pointer;
+}
+
+#exchange-box {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.m-top16 {
+    margin-top: 16px;
+}
+
+.m-bot16 {
+    margin-top: 16px;
+}
+
