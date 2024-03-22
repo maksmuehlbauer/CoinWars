@@ -1,3 +1,14 @@
+:root {
+    --white: #ffffff;
+    --black: #000000;
+    --primary: #3861FB;
+    --primary-hover: #3055d9;
+    --secondary: #EFF2F5;
+    --secondary-hover: #d4d7d9;
+    --green: #16c784;
+    --red: #ea3943;
+}
+
 * {
     margin: 0;
     box-sizing: border-box;
@@ -13,28 +24,28 @@ body {
 
 #content {
     width: 600px;
-    height: 800px;
+    /* height: 800px; */
     background-color: antiquewhite;
     display: flex;
     flex-wrap: wrap;
-    border: 1px solid black;
+    border: 1px solid var(--black);
 }
 
 .container-w50 {
     width: 50%;
-    height: 220px;
+    /* height: 220px; */
     background-color: white;
-    border: 1px solid black;
+    border: 1px solid var(--black);
 }
 
 .container-w100 {
     width: 100%;
     height: 220px;
-    background-color: white;
+    background-color: var(--white);
 }
 
 #portfolio-container, #exchanges-container {
-    background-color: white;
+    background-color: var(--white);
 }
 
 .d-flex-between {
@@ -44,7 +55,7 @@ body {
 }
 
 h2 {
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 600;
 }
 
@@ -64,13 +75,28 @@ h2 {
     align-items: center;
 }
 
-.exchange-buttons {
+.buttons {
     width: 47%;
     border: none;
     padding: 16px 0;
     border-radius: 12px;
-    background-color: lightblue;
+    background-color: var(--secondary);
     cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.buttons:hover {
+    background-color: var(--secondary-hover);
+}
+
+.primary-btn {
+    background-color: var(--primary);
+    color: var(--white)
+}
+
+.primary-btn:hover {
+    background-color: var(--primary-hover);
 }
 
 #exchange-box {
@@ -88,3 +114,37 @@ h2 {
     margin-top: 16px;
 }
 
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+    /* background-color: #3055d9; */
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--secondary);
+    cursor: pointer;
+}
+
+th:nth-child(3), td:nth-child(3) {
+    padding: 8px;
+    text-align: right;
+    border-bottom: 1px solid var(--secondary);
+    cursor: pointer;
+}
+
+tr:hover {
+    background-color: var(--secondary-hover);
+}
+
+table img {
+    width: 20px;
+}
+
+.logo-name-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}

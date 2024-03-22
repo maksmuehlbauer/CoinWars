@@ -3,11 +3,21 @@ let finishDay = 30;
 let cash = 3000;
 let bank = 0;
 let debt = -3000;
-let exchanges = ['FTX', 'Coinbase', 'Kraken', 'Crypto.com', 'Bincance', 'Poloniex']
+let exchanges = ['FTX', 'Coinbase', 'Kraken', 'Crypto.com', 'Bincance', 'Poloniex'];
+let cryptoCurrencys = []
 
-function init() {
+
+async function getCurrencyData() {
+    let response = await fetch('./cryptocurrencys.json');
+    cryptoCurrencys = await response.json();
+}
+
+
+async function init() {
+    await getCurrencyData();
     renderGameInformation();
     renderExchangeInformation();
+    renderExchangeSupply() 
 }
 
 function renderGameInformation() {
@@ -32,11 +42,28 @@ function formatFinanceValues(value) {
 function renderExchangeInformation() {
     let exchangeButtons = document.getElementById('exchange-box');
     
-
     for (let i = 0; i < exchanges.length; i++) {
         const exchange = exchanges[i];
-        exchangeButtons.innerHTML += `
-        <button class="exchange-buttons">${exchange}</button>
+        exchangeButtons.innerHTML += /*html*/`
+        <button class="buttons">${exchange}</button>
         `
     }
 }
+
+function renderExchangeSupply() {
+    let supplyTable = document.getElementById('exchange-supply-table');
+
+    for (let i = 0; i < cryptoCurrencys.length; i++) {
+        const currency = cryptoCurrencys[i];
+        supplyTable.innerHTML += /*html*/`
+        <tr>
+            <td>${i + 1}</td>
+            <td><div class="logo-name-box"><img src="${currency.logo}">${currency.name}<div></td>
+            <td>${formatFinanceValues(currency.price)}</td>
+            
+        </tr>
+        `
+    }
+
+}
+

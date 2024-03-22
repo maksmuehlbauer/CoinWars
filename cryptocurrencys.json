@@ -1,0 +1,62 @@
+[
+    {
+        "name": "Bitcoin",
+        "logo": "./img/bitcoin_logo.png",
+        "price": 64000,
+        "token": "BTC"
+    },
+    {
+        "name": "Ethereum",
+        "logo": "./img/ethereum_logo.png",
+        "price": 2500,
+        "token": "ETH"
+    },
+    {
+        "name": "Dogecoin",
+        "logo": "./img/dogecoin_logo.png",
+        "price": 0.6,
+        "token": "DOGE"
+    },
+    {
+        "name": "Solana",
+        "logo": "./img/solana_logo.png",
+        "price": 172,
+        "token": "SOL"
+    },
+    {
+        "name": "VeChain",
+        "logo": "./img/vechain_logo.png",
+        "price": 0.08,
+        "token": "VET"
+    },
+    {
+        "name": "Ripple",
+        "logo": "./img/ripple_logo.png",
+        "price": 1.2,
+        "token": "XRP"
+    },
+    {
+        "name": "Litecoin",
+        "logo": "./img/litecoin_logo.png",
+        "price": 180,
+        "token": "LTC"
+    },
+    {
+        "name": "Cardano",
+        "logo": "./img/cardano_logo.png",
+        "price": 1.5,
+        "token": "ADA"
+    },
+    {
+        "name": "Polkadot",
+        "logo": "./img/polkadot_logo.png",
+        "price": 35,
+        "token": "DOT"
+    },
+    {
+        "name": "Chainlink",
+        "logo": "./img/chainlink_logo.png",
+        "price": 25,
+        "token": "LINK"
+    }
+]
