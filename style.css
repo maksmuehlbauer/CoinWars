@@ -6,7 +6,9 @@
     --secondary: #EFF2F5;
     --secondary-hover: #d4d7d9;
     --green: #16c784;
+    --green-hover: #13ad72;
     --red: #ea3943;
+    --red-hover: #d1323d;
 }
 
 * {
@@ -54,6 +56,12 @@ body {
     align-items: center;
 }
 
+.d-flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 h2 {
     font-size: 16px;
     font-weight: 600;
@@ -65,8 +73,13 @@ h2 {
 
 .topic {
 
+    text-align: center;
     display: block;
     font-size: 20px;
+}
+
+.m-top-8 {
+    margin-top: 8px;
 }
 
 #exchanges-container {
@@ -129,7 +142,6 @@ th, td {
 }
 
 th:nth-child(3), td:nth-child(3) {
-    padding: 8px;
     text-align: right;
     border-bottom: 1px solid var(--secondary);
     cursor: pointer;
@@ -147,4 +159,76 @@ table img {
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.exchange-supply-container {
+    height: 404px;
+}
+
+#trade-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.trade-menu {
+    position: absolute;
+    top: calc(50vh - 150px);
+    left: calc(50% - 150px);
+    width: 360px;
+    
+    background-color: white;
+    border-radius: 16px;
+    padding: 8px;
+}
+
+.buy-info-box {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px;
+    background-color: var(--primary);
+    border-radius: 8px;
+    color: var(--white);
+    margin: 8px 0;
+}
+
+h3 {
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.btn-trade-menu {
+    width: 64px;
+    margin: 16px 0;
+}
+
+.d-gap {
+    gap: 16px;
+}
+
+.buy-sell-btn {
+    padding: 16px 64px;
+    display: flex;
+    justify-content: center;
+}
+
+.color-green {
+    background-color: var(--green);
+    color: var(--white);
+}
+
+.color-green:hover {
+    background-color: var(--green-hover);
+}
+
+.color-red {
+    background-color: var(--red);
+    color: var(--white);
+}
+
+.color-red:hover {
+    background-color: var(--red-hover);
 }

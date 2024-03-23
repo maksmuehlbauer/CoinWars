@@ -10,20 +10,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
    
 </head>
-<body onload="init()"> 
+<body id="body" onload="init()"> 
     <div id="content">
         <div id="game-information-container" class="container-w50">
             <div id="day-info" class="d-flex-between pad-xy-8">
-                <h2>Day:</h2>
+                
             </div>
             <div id="cash-info" class="d-flex-between pad-xy-8">
-                <h2>Cash:</h2>
+                
             </div>
             <div id="bank-info" class="d-flex-between pad-xy-8">
-                <h2>Bank:</h2>
+                
             </div>
             <div id="debt-info" class="d-flex-between pad-xy-8">
-                <h2>Debt:</h2>
+                
             </div>
             <div class="d-flex-between pad-xy-8">
                 <button class="buttons primary-btn">Finances</button>
@@ -39,17 +39,17 @@
         <!-- <div id="game-controls-container" class="container-w100">
             empty conntainer no use at this time
         </div> -->
-        <div class="container-w50">
+        <div class="container-w50 exchange-supply-container">
+            <span class="topic m-top-8">Exchange offer</span>
             <table id="exchange-supply-table">
-                <tr>
-                  <th>#</th>
-                  <th>Name</th>
-                  <th>Price</th>
-                </tr>
+
             </table>
         </div>
         <div id="portfolio-container" class="container-w50">
-            
+            <span class="topic m-top-8">Hardware Wallet 0 / 1000</span>
+            <table id="storage-table">
+
+            </table>
         </div>
     </div>
     
