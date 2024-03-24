@@ -232,3 +232,17 @@ h3 {
 .color-red:hover {
     background-color: var(--red-hover);
 }
+
+.game-end{
+    padding: 16px;
+    background-color: var(--secondary);
+    border-radius: 8px;
+    color: var(--black);
+    margin: 8px 0;
+    font-size: 14px;
+}
+
+.btn-options {
+    width: 140px;
+    margin: 16px 0;
+}

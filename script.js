@@ -50,13 +50,26 @@ function formatFinanceValues(value) {
 
 function renderExchangeInformation() {
     let exchangeButtons = document.getElementById('exchange-box');
-    
+    exchangeButtons.innerHTML = ''
     for (let i = 0; i < exchanges.length; i++) {
         const exchange = exchanges[i];
         exchangeButtons.innerHTML += /*html*/`
-        <button class="buttons">${exchange}</button>
+        <button class="buttons" onclick="nextDay()">${exchange}</button>
         `
+    };
+}
+
+
+function nextDay() {
+    debt *= 1.1;
+    bank *= 1.1;
+    startDay += 1;
+    let bodyContainer = document.getElementById(`body`);
+    if (startDay === finishDay) {
+        bodyContainer.innerHTML += renderGameEndHTML();
     }
+    renderGameInformation()
+    renderExchangeSupply()
 }
 
 
@@ -72,6 +85,7 @@ async function renderExchangeSupply() {
         supplyTable.innerHTML += renderExchangeSupplyHTML(i, currency, currencyPrice) ;
     }
 }
+
 
 async function renderStorageTable() {
     let storageTable = document.getElementById('storage-table');
@@ -95,9 +109,11 @@ function uniqueRandomNumbers() {
     stockExchangeOffer.sort()
 }
 
+
 function percentagePriceGenerator(min, max) {
     return Math.random() * (max - min) + min;
 }
+
 
 // generiert eine zahl zwischen 5-10
 function generateRandomIndexCount() {
@@ -118,7 +134,7 @@ function convertStringToFloat(currencyPrice) {
 }
 
 
-function openTradeMenu(i) {
+function openBuyMenu(i) {
     let bodyContainer = document.getElementById(`body`);
     let currencyName = document.getElementById(`currency-name-${i}`).innerHTML;
     let currencyPrice = document.getElementById(`currency-price-${i}`).innerHTML;
@@ -129,22 +145,28 @@ function openTradeMenu(i) {
     bodyContainer.innerHTML += renderBuyMenuHTML(quantity, priceAsFloat, i, currencyPrice, searchedCurrency);
 }
 
+function openSellMenu(i) {
+    let token = tokenStorage[i]
+    let bodyContainer = document.getElementById(`body`);
+    let profit = token.buyprice * token.quantity;
+    bodyContainer.innerHTML += renderSellMenuHTML(i, token, profit);
+}
+
 
 function closeTradeWindow() {
     document.getElementById('trade-background').remove()
 }
+
 
 function stopclickingthrough(event) {
     event.stopPropagation()
 }
 
 
-function quantityChanger(percent, priceAsFloat) {
+function buyQuantityChanger(percent, priceAsFloat) {
     let floatingNumber = parseFloat(percent / 100)
     quantity = Math.floor((cash * floatingNumber) / priceAsFloat) 
     cost = (quantity * priceAsFloat)
-
-
     document.getElementById('amount').innerHTML = quantity
     document.getElementById('total').innerHTML = formatFinanceValues(cost)
 }
@@ -164,18 +186,62 @@ function buyCurrency(i) {
     closeTradeWindow();
 }
 
+function sellQuantityChanger(percent, i) {
+   
+    // let floatingNumber = parseFloat(percent / 100);
+    
+    // build a slider !!!!!!!!!!!
+    // let token = tokenStorage[i];
+
+    
+    document.getElementById('total').innerHTML = formatFinanceValues('10000')
+}
+
+
+function sellCurrency(i) {
+    let token = tokenStorage[i];
+    let stringTotal = document.getElementById('total').innerHTML;
+    let maxProfit = convertStringToFloat(stringTotal)
+    
+    let currencySellName= token.name
+    let searchedCurrencyName = document.querySelectorAll(currencySellName)
+    console.log(searchedCurrencyName)
+
+    cash += maxProfit
+    // token.quantity -= token.quantity
+    token.quantity -= 1
+    if (token.quantity <= 0) {
+        tokenStorage.splice(i, 1)
+    }
+
+    renderStorageTable()
+    renderGameInformation()
+    // closeTradeWindow();
+}
+
 
 function pushToTokenStroage(i, priceAsFloat) {
     let currencyName = document.getElementById(`currency-name-${i}`).innerHTML;
     let searchedCurrency = cryptoCurrencys.find(currency => currency.name === currencyName);
     let boughtCurrency = {
-        "name": searchedCurrency.token,
+        "name": searchedCurrency.name,
         "logo": searchedCurrency.logo,
         "quantity": Math.floor(quantity),
         "buyprice": priceAsFloat,
         "token": searchedCurrency.token
     }
     tokenStorage.push(boughtCurrency)
+}
+
+
+function newGame() {
+    startDay = 0;
+    cash = 3000;
+    bank = 0;
+    debt = -3000
+    tokenStorage = []
+    init();
+    closeTradeWindow() 
 }
 
 // HTML Templates
@@ -192,7 +258,7 @@ function renderExchangeSupplyTableHeaderHTML() {
 
 function renderExchangeSupplyHTML(i, currency, currencyPrice) {
     return /*html*/`
-        <tr id="tr-exchange-${i}" onclick="openTradeMenu(${i})">
+        <tr id="tr-exchange-${i}" onclick="openBuyMenu(${i})">
             <td>${i + 1}</td>
             <td><div class="logo-name-box"><img src="${currency.logo}"><div id="currency-name-${i}">${currency.name}</div><div></td>
             <td id="currency-price-${i}">${formatFinanceValues(currencyPrice)}</td>
@@ -214,10 +280,10 @@ function renderStorageTableHeaderHTML() {
 
 function renderStorageHTML(i, storageCurrency) {
     return /*html*/`
-        <tr id="tr-storage-${i}">
-            <td><div class="logo-name-box"><img src="${storageCurrency.logo}">${storageCurrency.name}<div></td>
+        <tr id="tr-storage-${i}" onclick="openSellMenu(${i})">
+            <td><div class="logo-name-box"><img src="${storageCurrency.logo}">${storageCurrency.token}<div></td>
             <td>${storageCurrency.quantity}</td>
-            <td>${formatFinanceValues(storageCurrency.buyprice)} €</td>
+            <td>${formatFinanceValues(storageCurrency.buyprice)}</td>
         </tr>
     `
 }
@@ -231,10 +297,10 @@ function renderBuyMenuHTML(quantity, priceAsFloat, i, currencyPrice, searchedCur
                 <div class="buy-info-box"><h3>Currency Price</h3> <h3>${currencyPrice}</h3></div>
                 <div class="buy-info-box"><h3>Amount</h3> <h3><span id="amount">${quantity}</span> ${searchedCurrency.token}</h3></div>
                 <div class="d-flex-between">
-                    <button class="buttons btn-trade-menu" onclick="quantityChanger('100', ${priceAsFloat})">(100%)</button>
-                    <button class="buttons btn-trade-menu" onclick="quantityChanger('75', ${priceAsFloat})">(75%)</button>
-                    <button class="buttons btn-trade-menu" onclick="quantityChanger('50', ${priceAsFloat})">(50%)</button>
-                    <button class="buttons btn-trade-menu" onclick="quantityChanger('25', ${priceAsFloat})">(25%)</button>
+                    <button class="buttons btn-trade-menu" onclick="buyQuantityChanger('100', ${priceAsFloat})">(100%)</button>
+                    <button class="buttons btn-trade-menu" onclick="buyQuantityChanger('75', ${priceAsFloat})">(75%)</button>
+                    <button class="buttons btn-trade-menu" onclick="buyQuantityChanger('50', ${priceAsFloat})">(50%)</button>
+                    <button class="buttons btn-trade-menu" onclick="buyQuantityChanger('25', ${priceAsFloat})">(25%)</button>
                 </div>
                 <div class="buy-info-box"><h3>Total</h3> <h3><span id="total">${formatFinanceValues(cost)}</span></h3></div>
                 <div class="d-flex-center d-gap">
@@ -244,4 +310,59 @@ function renderBuyMenuHTML(quantity, priceAsFloat, i, currencyPrice, searchedCur
             </div>
         </div>
     `
+}
+
+
+function renderSellMenuHTML(i, tokenStorage, profit) {
+    return /*html*/`
+        <div id="trade-background" onclick="closeTradeWindow()">
+            <div class="trade-menu" onclick="stopclickingthrough(event)">
+                <span class="topic">Sell Order</span>
+                <div class="buy-info-box"><h3>Currency Price</h3> <h3>${tokenStorage.buyprice}</h3></div>
+                <div class="buy-info-box"><h3>Amount</h3> <h3><span id="amount">${tokenStorage.quantity}</span> ${tokenStorage.token}</h3></div>
+                <div class="d-flex-between">
+                    <!-- <button class="buttons btn-trade-menu" onclick="sellQuantityChanger('100', ${i})">(100%)</button> -->
+                    <!-- <button class="buttons btn-trade-menu" onclick="sellQuantityChanger('75', ${i})">(75%)</button> -->
+                    <!-- <button class="buttons btn-trade-menu" onclick="sellQuantityChanger('50', ${i})">(50%)</button> -->
+                    <!-- <button class="buttons btn-trade-menu" onclick="sellQuantityChanger('25', ${i})">(25%)</button> -->
+                </div>
+                <div class="buy-info-box"><h3>Total</h3> <h3><span id="total">${formatFinanceValues(profit)}</span></h3></div>
+                <div class="d-flex-center d-gap">
+                    <button class="buttons btn-trade-menu buy-sell-btn color-red" onclick="sellCurrency(${i})">Sell</button>
+                    <button class="buttons btn-trade-menu buy-sell-btn color-red" onclick="closeTradeWindow()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    `
+}
+
+function renderGameEndHTML() {
+    return /*html*/`
+    <div id="trade-background">
+        <div class="trade-menu" onclick="stopclickingthrough(event)">
+            <span class="topic">Game End</span>
+            <div class="buy-info-box game-end">
+                <h3>Cash:</h3> 
+                <h3>${formatFinanceValues(cash)}</h3>
+            </div>
+            <div class="buy-info-box game-end">
+                <h3>Bank:</h3> 
+                <h3>${formatFinanceValues(bank)}</h3>
+            </div>
+            <div class="buy-info-box game-end">
+                <h3>Debt:</h3> 
+                <h3>${formatFinanceValues(debt)}</h3>
+            </div>
+            <div class="buy-info-box">
+                <h3>Score:</h3> 
+                <h3><b>${formatFinanceValues((cash + bank) + debt)}</b></h3>
+            </div>
+            <div class="d-flex-center d-gap">
+                <button class="buttons btn-options primary-btn" onclick="newGame()">New Game</button>
+                <button class="buttons btn-options primary-btn">Leaderboard</button>
+            </div>
+            
+        </div>
+    </div>
+`
 }
