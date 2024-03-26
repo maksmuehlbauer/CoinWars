@@ -1,6 +1,6 @@
 let startDay = 0;
 let finishDay = 30;
-let cash = 5000;
+let cash = 4500;
 let bank = 0;
 let debt = -3000;
 let exchanges = ['FTX', 'Coinbase', 'Kraken', 'Crypto.com', 'Bincance', 'Poloniex'];
@@ -8,10 +8,12 @@ let cryptoCurrencys = [] // comple JSON Data
 let stockExchangeOffer = [];
 let minPercentagePrice = 0.65;
 let maxPercentagePrice = 1.35;
-let tokenStorage = []
+let tokenStorage = [];
 let quantity;
 let cost;
-let dailyTokensPrices = []
+let dailyTokensPrices = [];
+let profit;
+let sliderValue;
 
 
 async function getCurrencyData() {
@@ -19,31 +21,12 @@ async function getCurrencyData() {
     cryptoCurrencys = await response.json();
 }
 
-
-function payLoan() {
-
-    if (cash >= 0 && debt < 0) {
-        let restSchulden = debt + cash
-        let restCash = cash - debt
-        debt = restCash
-        cash = restSchulden
-    } else {
-        return "Ungültige Eingaben: Cash muss größer oder gleich Null sein und Schulden müssen kleiner als Null sein.";
-    }
-
-
-    renderGameInformation()
-}
-
-
-
 async function init() {
     await getCurrencyData();
     renderGameInformation();
     renderExchangeInformation();
     await renderExchangeSupply();
     await renderStorageTable();
-    renderFinances()
 }
 
 function renderGameInformation() {
@@ -80,8 +63,8 @@ function renderExchangeInformation() {
 
 
 function nextDay() {
-    debt *= 1.1;
-    bank *= 1.1;
+    debt *= 1.15;
+    bank *= 1.05;
     startDay += 1;
     let bodyContainer = document.getElementById(`body`);
     if (startDay === finishDay) {
@@ -101,7 +84,6 @@ async function renderExchangeSupply() {
     for (let i = 0; i < stockExchangeOffer.length; i++) {
         const currency = cryptoCurrencys[stockExchangeOffer[i]];
         let currencyPrice = currency.price * percentagePriceGenerator(minPercentagePrice, maxPercentagePrice);
-
         let currentTokenPrice = {
             "token" : currency.token,
             "currentprice" : currencyPrice,
@@ -166,35 +148,46 @@ function openBuyMenu(i) {
     let priceAsFloat = convertStringToFloat(currencyPrice)
     let searchedCurrency = cryptoCurrencys.find(currency => currency.name === currencyName);
     quantity = Math.floor(cash / priceAsFloat)
-    console.log(quantity)
     cost = quantity * priceAsFloat
     bodyContainer.innerHTML += renderBuyMenuHTML(quantity, priceAsFloat, i, currencyPrice, searchedCurrency);
 }
 
 function openSellMenu(i) {
     let currentToken = tokenStorage[i]
-
-    
     let searchedTokenOnExchange = dailyTokensPrices.find( currency => currency.token === currentToken.token )
-    // console.log(searchedTokenOnExchange)
     let currentSellPrice = searchedTokenOnExchange.currentprice.toFixed(2)
-    // console.log(currentSellPrice)
-    let profit = currentSellPrice * currentToken.quantity;
-
+    profit = currentSellPrice * currentToken.quantity;
 
     let bodyContainer = document.getElementById(`body`);
     bodyContainer.innerHTML += renderSellMenuHTML(i, currentToken, profit, currentSellPrice);
+
+    let slider = document.getElementById('slider');
+    slider.addEventListener("input", function() {
+        updateSliderValue(slider, currentSellPrice);
+    });
+    updateSliderValue(slider, currentSellPrice);
+}
+
+
+function updateSliderValue(slider, currentSellPrice) {
+    let amount = document.getElementById('amount');
+    let total = document.getElementById('total');
+    sliderValue = parseFloat(slider.value);
+
+    amount.textContent = sliderValue;
+    total.textContent = formatFinanceValues(sliderValue * currentSellPrice);
+    profit = currentSellPrice * sliderValue;
 }
 
 
 function sellCurrency(i) {
     let token = tokenStorage[i];
     let stringTotal = document.getElementById('total').innerHTML;
-    let maxProfit = convertStringToFloat(stringTotal)
+    // let maxProfit = convertStringToFloat(stringTotal)
     
 
-    cash += maxProfit
-    token.quantity -= token.quantity
+    cash += profit
+    token.quantity -= sliderValue
     if (token.quantity <= 0) {
         tokenStorage.splice(i, 1)
     }
@@ -239,17 +232,6 @@ function buyCurrency(i) {
     closeTradeWindow();
 }
 
-function sellQuantityChanger(percent, i) {
-   
-    // let floatingNumber = parseFloat(percent / 100);
-    
-    // build a slider !!!!!!!!!!!
-    // let token = tokenStorage[i];
-
-    
-    document.getElementById('total').innerHTML = formatFinanceValues('10000')
-}
-
 
 
 function pushToTokenStroage(i, priceAsFloat) {
@@ -283,37 +265,13 @@ function newGame() {
 function renderFinances() {
     let bodyContainer = document.getElementById(`body`);
 
-    bodyContainer.innerHTML += /*html*/`
-    <div id="trade-background" onclick="closeTradeWindow()">
-        <div class="trade-menu" onclick="stopclickingthrough(event)">
-            <span class="topic">Finances</span>
-            <div class="d-flex-center d-gap">
-                <div class="buy-info-box flex-1">
-                    <h3>Cash</h3> 
-                    <h3>${cash}</h3>
-                </div>
-                <button class="buttons finance-button" onclick="cashToBank()">to Bank</button>
-            </div>
-            <div class="d-flex-center d-gap">
-                <div class="buy-info-box flex-1">
-                    <h3>Bank</h3> 
-                    <h3>${bank}</h3>
-                </div>
-                <button class="buttons finance-button" onclick="withdrawFromBank()">withdraw</button>
-            </div>
-            <div class="d-flex-center d-gap">
-                <div class="buy-info-box flex-1">
-                    <h3>Debt</h3> 
-                    <h3>${debt}</h3>
-                </div>
-                <button class="buttons finance-button" onclick="payLoan()">pay loan</button>
-            </div>
-            <div class="d-flex-center d-gap">
-                <button class="buttons btn-trade-menu buy-sell-btn color-red" onclick="closeTradeWindow()">Cancel</button>
-            </div>
-        </div>
-    </div>
-`
+    bodyContainer.innerHTML += renderFinancesHTML();
+}
+
+function refreshFinanceValues() {
+    document.getElementById('finance-cash').innerHTML = `${formatFinanceValues(cash)}`;
+    document.getElementById('finance-bank').innerHTML = `${formatFinanceValues(bank)}`;
+    document.getElementById('finance-debt').innerHTML = `${formatFinanceValues(debt)}`;
 }
 
 
@@ -323,9 +281,8 @@ function cashToBank() {
     }
     bank += cash;
     cash = 0;
-    
     renderGameInformation();
-    closeTradeWindow()
+    refreshFinanceValues()
 }
 
 
@@ -335,10 +292,29 @@ function withdrawFromBank() {
     }
     cash += bank
     bank = 0
-
     renderGameInformation();
-    closeTradeWindow()
+    refreshFinanceValues()
 }
+
+
+function payLoan() {
+    if (debt === 0 ) {
+        alert('nothing to pay')
+    }
+    if (cash > Math.abs(debt)) {
+        let newCash = cash + debt
+        debt = 0
+        cash = newCash
+    } else if  (cash <= Math.abs(debt)) {
+        debt += cash
+        cash = 0
+    }
+
+    renderGameInformation()
+    refreshFinanceValues()
+}
+
+
 
 
 
@@ -417,10 +393,10 @@ function renderSellMenuHTML(i, currentToken, profit, currentSellPrice) {
         <div id="trade-background" onclick="closeTradeWindow()">
             <div class="trade-menu" onclick="stopclickingthrough(event)">
                 <span class="topic">Sell Order</span>
-                <div class="buy-info-box"><h3>Sell Price</h3> <h3>${currentSellPrice}</h3></div>
+                <div class="buy-info-box"><h3>Sell Price</h3> <h3>${currentSellPrice} €</h3></div>
                 <div class="buy-info-box"><h3>Your Balance</h3> <h3><span id="amount">${currentToken.quantity}</span> ${currentToken.token}</h3></div>
                 <div class="d-flex-between">
-                    <!-- input range !!!!!!!!!!!!!!!! -->
+                    <input type="range" min="0" max=${currentToken.quantity} step="1.0" value=${currentToken.quantity} id="slider">
                 </div>
                 <div class="buy-info-box"><h3>Total</h3> <h3><span id="total">${formatFinanceValues(profit)}</span></h3></div>
                 <div class="d-flex-center d-gap">
@@ -461,5 +437,40 @@ function renderGameEndHTML() {
         </div>
     </div>
 `
+}
+
+
+function renderFinancesHTML() {
+    return /*html*/`
+        <div id="trade-background" onclick="closeTradeWindow()">
+            <div class="trade-menu" onclick="stopclickingthrough(event)">
+                <span class="topic">Finances</span>
+                <div class="d-flex-center d-gap">
+                    <div class="buy-info-box flex-1">
+                        <h3>Cash</h3> 
+                        <h3 id="finance-cash">${formatFinanceValues(cash)}</h3>
+                    </div>
+                    <button class="buttons finance-button" onclick="cashToBank()">to Bank</button>
+                </div>
+                <div class="d-flex-center d-gap">
+                    <div class="buy-info-box flex-1">
+                        <h3>Bank</h3> 
+                        <h3 id="finance-bank">${formatFinanceValues(bank)}</h3>
+                    </div>
+                    <button class="buttons finance-button" onclick="withdrawFromBank()">withdraw</button>
+                </div>
+                <div class="d-flex-center d-gap">
+                    <div class="buy-info-box flex-1">
+                        <h3>Debt</h3> 
+                        <h3 id="finance-debt">${formatFinanceValues(debt)}</h3>
+                    </div>
+                    <button id="pay-loan" class="buttons finance-button" onclick="payLoan()">pay loan</button>
+                </div>
+                <div class="d-flex-center d-gap">
+                    <button class="buttons btn-trade-menu buy-sell-btn color-red" onclick="closeTradeWindow()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    `
 }
 
