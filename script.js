@@ -1,6 +1,6 @@
 let startDay = 0;
 let finishDay = 30;
-let cash = 3000;
+let cash = 5000;
 let bank = 0;
 let debt = -3000;
 let exchanges = ['FTX', 'Coinbase', 'Kraken', 'Crypto.com', 'Bincance', 'Poloniex'];
@@ -11,6 +11,7 @@ let maxPercentagePrice = 1.35;
 let tokenStorage = []
 let quantity;
 let cost;
+let dailyTokensPrices = []
 
 
 async function getCurrencyData() {
@@ -19,12 +20,30 @@ async function getCurrencyData() {
 }
 
 
+function payLoan() {
+
+    if (cash >= 0 && debt < 0) {
+        let restSchulden = debt + cash
+        let restCash = cash - debt
+        debt = restCash
+        cash = restSchulden
+    } else {
+        return "Ungültige Eingaben: Cash muss größer oder gleich Null sein und Schulden müssen kleiner als Null sein.";
+    }
+
+
+    renderGameInformation()
+}
+
+
+
 async function init() {
     await getCurrencyData();
     renderGameInformation();
     renderExchangeInformation();
     await renderExchangeSupply();
     await renderStorageTable();
+    renderFinances()
 }
 
 function renderGameInformation() {
@@ -78,10 +97,16 @@ async function renderExchangeSupply() {
     let supplyTable = document.getElementById('exchange-supply-table');
 
     supplyTable.innerHTML = renderExchangeSupplyTableHeaderHTML();
-
+    dailyTokensPrices = [];
     for (let i = 0; i < stockExchangeOffer.length; i++) {
         const currency = cryptoCurrencys[stockExchangeOffer[i]];
         let currencyPrice = currency.price * percentagePriceGenerator(minPercentagePrice, maxPercentagePrice);
+
+        let currentTokenPrice = {
+            "token" : currency.token,
+            "currentprice" : currencyPrice,
+        }
+        dailyTokensPrices.push(currentTokenPrice)
         supplyTable.innerHTML += renderExchangeSupplyHTML(i, currency, currencyPrice) ;
     }
 }
@@ -141,16 +166,44 @@ function openBuyMenu(i) {
     let priceAsFloat = convertStringToFloat(currencyPrice)
     let searchedCurrency = cryptoCurrencys.find(currency => currency.name === currencyName);
     quantity = Math.floor(cash / priceAsFloat)
+    console.log(quantity)
     cost = quantity * priceAsFloat
     bodyContainer.innerHTML += renderBuyMenuHTML(quantity, priceAsFloat, i, currencyPrice, searchedCurrency);
 }
 
 function openSellMenu(i) {
-    let token = tokenStorage[i]
+    let currentToken = tokenStorage[i]
+
+    
+    let searchedTokenOnExchange = dailyTokensPrices.find( currency => currency.token === currentToken.token )
+    // console.log(searchedTokenOnExchange)
+    let currentSellPrice = searchedTokenOnExchange.currentprice.toFixed(2)
+    // console.log(currentSellPrice)
+    let profit = currentSellPrice * currentToken.quantity;
+
+
     let bodyContainer = document.getElementById(`body`);
-    let profit = token.buyprice * token.quantity;
-    bodyContainer.innerHTML += renderSellMenuHTML(i, token, profit);
+    bodyContainer.innerHTML += renderSellMenuHTML(i, currentToken, profit, currentSellPrice);
 }
+
+
+function sellCurrency(i) {
+    let token = tokenStorage[i];
+    let stringTotal = document.getElementById('total').innerHTML;
+    let maxProfit = convertStringToFloat(stringTotal)
+    
+
+    cash += maxProfit
+    token.quantity -= token.quantity
+    if (token.quantity <= 0) {
+        tokenStorage.splice(i, 1)
+    }
+
+    renderStorageTable()
+    renderGameInformation()
+    closeTradeWindow();
+}
+
 
 
 function closeTradeWindow() {
@@ -198,27 +251,6 @@ function sellQuantityChanger(percent, i) {
 }
 
 
-function sellCurrency(i) {
-    let token = tokenStorage[i];
-    let stringTotal = document.getElementById('total').innerHTML;
-    let maxProfit = convertStringToFloat(stringTotal)
-    
-    let currencySellName= token.name
-    let searchedCurrencyName = document.querySelectorAll(currencySellName)
-    console.log(searchedCurrencyName)
-
-    cash += maxProfit
-    // token.quantity -= token.quantity
-    token.quantity -= 1
-    if (token.quantity <= 0) {
-        tokenStorage.splice(i, 1)
-    }
-
-    renderStorageTable()
-    renderGameInformation()
-    // closeTradeWindow();
-}
-
 
 function pushToTokenStroage(i, priceAsFloat) {
     let currencyName = document.getElementById(`currency-name-${i}`).innerHTML;
@@ -241,8 +273,75 @@ function newGame() {
     debt = -3000
     tokenStorage = []
     init();
-    closeTradeWindow() 
+    let bgExists = document.getElementById('trade-background')
+    if (bgExists) {
+        closeTradeWindow() 
+    }
 }
+
+
+function renderFinances() {
+    let bodyContainer = document.getElementById(`body`);
+
+    bodyContainer.innerHTML += /*html*/`
+    <div id="trade-background" onclick="closeTradeWindow()">
+        <div class="trade-menu" onclick="stopclickingthrough(event)">
+            <span class="topic">Finances</span>
+            <div class="d-flex-center d-gap">
+                <div class="buy-info-box flex-1">
+                    <h3>Cash</h3> 
+                    <h3>${cash}</h3>
+                </div>
+                <button class="buttons finance-button" onclick="cashToBank()">to Bank</button>
+            </div>
+            <div class="d-flex-center d-gap">
+                <div class="buy-info-box flex-1">
+                    <h3>Bank</h3> 
+                    <h3>${bank}</h3>
+                </div>
+                <button class="buttons finance-button" onclick="withdrawFromBank()">withdraw</button>
+            </div>
+            <div class="d-flex-center d-gap">
+                <div class="buy-info-box flex-1">
+                    <h3>Debt</h3> 
+                    <h3>${debt}</h3>
+                </div>
+                <button class="buttons finance-button" onclick="payLoan()">pay loan</button>
+            </div>
+            <div class="d-flex-center d-gap">
+                <button class="buttons btn-trade-menu buy-sell-btn color-red" onclick="closeTradeWindow()">Cancel</button>
+            </div>
+        </div>
+    </div>
+`
+}
+
+
+function cashToBank() {
+    if (cash <= 0) {
+        alert('you have not enough funds CASH')
+    }
+    bank += cash;
+    cash = 0;
+    
+    renderGameInformation();
+    closeTradeWindow()
+}
+
+
+function withdrawFromBank() {
+    if (bank <= 0) {
+        alert('you have not enough funds BANK')
+    }
+    cash += bank
+    bank = 0
+
+    renderGameInformation();
+    closeTradeWindow()
+}
+
+
+
 
 // HTML Templates
 
@@ -313,18 +412,15 @@ function renderBuyMenuHTML(quantity, priceAsFloat, i, currencyPrice, searchedCur
 }
 
 
-function renderSellMenuHTML(i, tokenStorage, profit) {
+function renderSellMenuHTML(i, currentToken, profit, currentSellPrice) {
     return /*html*/`
         <div id="trade-background" onclick="closeTradeWindow()">
             <div class="trade-menu" onclick="stopclickingthrough(event)">
                 <span class="topic">Sell Order</span>
-                <div class="buy-info-box"><h3>Currency Price</h3> <h3>${tokenStorage.buyprice}</h3></div>
-                <div class="buy-info-box"><h3>Amount</h3> <h3><span id="amount">${tokenStorage.quantity}</span> ${tokenStorage.token}</h3></div>
+                <div class="buy-info-box"><h3>Sell Price</h3> <h3>${currentSellPrice}</h3></div>
+                <div class="buy-info-box"><h3>Your Balance</h3> <h3><span id="amount">${currentToken.quantity}</span> ${currentToken.token}</h3></div>
                 <div class="d-flex-between">
-                    <!-- <button class="buttons btn-trade-menu" onclick="sellQuantityChanger('100', ${i})">(100%)</button> -->
-                    <!-- <button class="buttons btn-trade-menu" onclick="sellQuantityChanger('75', ${i})">(75%)</button> -->
-                    <!-- <button class="buttons btn-trade-menu" onclick="sellQuantityChanger('50', ${i})">(50%)</button> -->
-                    <!-- <button class="buttons btn-trade-menu" onclick="sellQuantityChanger('25', ${i})">(25%)</button> -->
+                    <!-- input range !!!!!!!!!!!!!!!! -->
                 </div>
                 <div class="buy-info-box"><h3>Total</h3> <h3><span id="total">${formatFinanceValues(profit)}</span></h3></div>
                 <div class="d-flex-center d-gap">
@@ -366,3 +462,4 @@ function renderGameEndHTML() {
     </div>
 `
 }
+

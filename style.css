@@ -246,3 +246,17 @@ h3 {
     width: 140px;
     margin: 16px 0;
 }
+
+.flex-1 {
+    flex: 1;
+}
+
+.finance-button {
+    width: 112px;
+    padding: 16px;
+    border-radius: 8px;
+    color: var(--black);
+    margin: 8px 0;
+    font-weight: 400;
+    font-size: 16px;
+}
