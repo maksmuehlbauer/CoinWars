@@ -19,7 +19,6 @@ let percentEventTrigger = 19; // 9 = 10% | 99 = 100%
 let fiftyPercent = 49; // 0 = 0% | 99 = 100%
 let highScore = []
 
-
 load();
 
 async function getCurrencyData() {
@@ -47,6 +46,13 @@ function renderGameInformation() {
 }
 
 
+function changeDebtColor() {
+    if (debt === 0) {
+        document.getElementById('debt-info').style.color = "black" ;
+    }
+}
+
+
 function formatFinanceValues(value) {
     let formatedNumber = value.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
     return formatedNumber;
@@ -70,6 +76,7 @@ function nextDay() {
     bank *= 1.05;
     startDay += 1;
     let bodyContainer = document.getElementById(`body`);
+    let terminal = document.getElementById('terminal').innerHTML = ''
     if (startDay > finishDay) {
         startDay = finishDay
         bodyContainer.innerHTML += renderGameEndHTML();
@@ -99,8 +106,6 @@ function createHighScores() {
     if (highScore.length > 10) {
         highScore.pop()
     }
-
-
 }
 
 
@@ -121,23 +126,22 @@ function bullBaerEvent() {
 }
 
 function bullEvent(rndIndex, randomCurrency, defaultValue) {
-    console.log('bullrun: ' + cryptoCurrencys[randomCurrency].name)
+    let terminal = document.getElementById('terminal')
+    terminal.innerHTML = `Moon Prices: ${cryptoCurrencys[randomCurrency].name}`
     let randomPrice = defaultValue * percentagePriceGenerator(minPercentagePrice, maxPercentagePrice)
     let bullBearPrice = randomPrice * 2.8
     document.getElementById(`currency-price-${rndIndex}`).innerHTML = formatFinanceValues(bullBearPrice)
     let searchedToken = dailyTokensPrices.find ( coin => coin.token === cryptoCurrencys[randomCurrency].token ) // overwrite value in event case
-    console.log(dailyTokensPrices)
     dailyTokensPrices[rndIndex].currentprice = bullBearPrice
 }
 
 
 function bearEvent(rndIndex, randomCurrency, defaultValue) {
-    console.log('Bearmarket: ' + cryptoCurrencys[randomCurrency].name)
+    terminal.innerHTML = `${cryptoCurrencys[randomCurrency].name} price Crashed`
     let randomPrice = defaultValue * percentagePriceGenerator(minPercentagePrice, maxPercentagePrice)
     let bullBearPrice = randomPrice * 0.32
     document.getElementById(`currency-price-${rndIndex}`).innerHTML = formatFinanceValues(bullBearPrice)
     let searchedToken = dailyTokensPrices.find ( coin => coin.token === cryptoCurrencys[randomCurrency].token ) // overwrite value in event case
-    console.log(dailyTokensPrices)
     dailyTokensPrices[rndIndex].currentprice = bullBearPrice
 }
 
@@ -263,7 +267,6 @@ function updateSellSliderValue(slider, currentSellPrice) {
 
 function sellCurrency(i) {
     let token = tokenStorage[i];
-    console.log(sliderValue)
     cash += profit
     token.quantity -= sliderValue
     if (token.quantity <= 0) {
@@ -381,6 +384,7 @@ function payLoan() {
         let newCash = cash + debt
         debt = 0
         cash = newCash
+        changeDebtColor()
     } else if  (cash <= Math.abs(debt)) {
         debt += cash
         cash = 0

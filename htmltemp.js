@@ -165,7 +165,7 @@ function renderLeaderboardTableHTML(i, score) {
         <tr>
             <td>${i + 1}</td>
             <td>${score.date}</td>
-            <td>${score.score}</td>
+            <td>${formatFinanceValues(score.score)}</td>
         </tr>
     `
 }
